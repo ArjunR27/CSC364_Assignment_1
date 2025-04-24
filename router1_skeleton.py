@@ -77,7 +77,7 @@ def generate_forwarding_table_with_range(table):
             # 6. Find the IP range.
             ip_range = find_ip_range(network_dst_bin, netmask_bin)
             # 7. Build the new row.
-            new_row = [ip_range[0], ip_range[1], row[-1]]
+            new_row = [ip_range[0], ip_range[1], row[-2], row[-1]]
             # 8. Append the new row to new_table.
             new_table.append(new_row)
     # 9. Return new_table.
@@ -168,7 +168,7 @@ for f in files:
 ## ...
 
 socket_2 = create_socket('127.0.0.1',8002)
-# socket_4 = create_socket('127.0.0.1',8004)
+socket_4 = create_socket('127.0.0.1',8004)
 
 # 2. Read in and store the forwarding table.
 forwarding_table = read_csv('./input/router_1_table.csv')
@@ -199,7 +199,13 @@ for packet in packets_table:
     ## new_packet = ...
 
     new_ttl = int(ttl) - 1
-    new_packet = []
+    new_packet = [sourceIP, destinationIP, payload, str(new_ttl)]
+
+    if new_ttl == 0:
+        print("DISCARD:", new_packet)
+        packet_str = ",".join(map(str, new_packet))
+        write_to_file("./output/discarded_by_router_1.txt", packet_str)
+        continue
 
     # 9. Convert the destination IP into an integer for comparison purposes.
     destinationIP_bin = ip_to_bin(destinationIP)
@@ -210,17 +216,18 @@ for packet in packets_table:
     # 9. Find the appropriate sending port to forward this new packet to.
     ## ...
     sending_port = 0
+    interface = None
     for element in forwarding_table_with_range:
         if int(element[0], 2) <= destinationIP_int <= int(element[1], 2):
-            sending_port = element[2]
+            interface = element[2]
+            sending_port = element[3]
     
     # 10. If no port is found, then set the sending port to the default port.
     ## ...
     if sending_port == 0:
         sending_port = default_gateway_port
-    
 
-    new_packet = [sourceIP, destinationIP, payload, str(new_ttl)]
+
     # 11. Either
     # (a) send the new packet to the appropriate port (and append it to sent_by_router_1.txt),
     # (b) append the payload to out_router_1.txt without forwarding because this router is the last hop, or
@@ -232,16 +239,17 @@ for packet in packets_table:
         write_to_file("./output/sent_by_router_1.txt", packet_str, "2")
     elif sending_port == '8004':
         print("sending packet", new_packet, "to Router 4")
-        packet_str = ",".join(map(str, new_packet))
-        # socket_4.sendall(packet_str.encode())
+        packet_str = ",".join(map(str, new_packet)) + "\n"
+        socket_4.sendall(packet_str.encode())
         write_to_file("./output/sent_by_router_1.txt", packet_str, "4")
-    elif sending_port == '127.0.0.1':
+    elif sending_port == '127.0.0.1' and interface == '127.0.0.1':
         print("OUT:", payload)
         write_to_file("./output/out_router_1.txt", payload)
-        # write to out_router_1.txt
     else:
         print("DISCARD:", new_packet)
-        write_to_file("./output/discarded_by_router_1.txt", payload)
+        packet_str = ",".join(map(str, new_packet))
+        write_to_file("./output/discarded_by_router_1.txt", packet_str)
+        # write to out_router_1.txt
 
     # Sleep for some time before sending the next packet (for debugging purposes)
     time.sleep(1)
