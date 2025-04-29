@@ -222,8 +222,8 @@ def start_server():
 def processing_thread(connection, ip, port, forwarding_table_with_range, default_gateway_port, max_buffer_size=5120):
     # 1. Connect to the appropriate sending ports (based on the network topology diagram).
 
-    # socket_5 = create_socket('127.0.0.1', 8005)
-    # socket_6 = create_socket('127.0.0.1', 8006)
+    socket_5 = create_socket('127.0.0.1', 8005)
+    socket_6 = create_socket('127.0.0.1', 8006)
 
     # 2. Continuously process incoming packets
     while True:
@@ -280,13 +280,13 @@ def processing_thread(connection, ip, port, forwarding_table_with_range, default
         if sending_port == '8005':
             print("sending packet", new_packet, "to Router 5")
             packet_str = ",".join(map(str, new_packet))
-            # socket_5.sendall(packet_str.encode())
+            socket_5.sendall(packet_str.encode())
             write_to_file("./output/sent_by_router_4.txt", packet_str, "5")
         elif sending_port == '8006':
             print("sending packet", new_packet, "to Router 6")
             packet_str = ",".join(map(str, new_packet))
-            # socket_6.sendall(packet_str.encode())
-            write_to_file("./output/sent_by_router_4.txt", packet_str, "5")
+            socket_6.sendall(packet_str.encode())
+            write_to_file("./output/sent_by_router_4.txt", packet_str, "6")
         elif sending_port == '127.0.0.1' and interface == '127.0.0.1':
             print("OUT:", payload)
             write_to_file("./output/out_router_4.txt", payload)

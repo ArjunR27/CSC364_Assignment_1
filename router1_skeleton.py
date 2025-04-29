@@ -239,7 +239,7 @@ for packet in packets_table:
         write_to_file("./output/sent_by_router_1.txt", packet_str, "2")
     elif sending_port == '8004':
         print("sending packet", new_packet, "to Router 4")
-        packet_str = ",".join(map(str, new_packet)) + "\n"
+        packet_str = ",".join(map(str, new_packet))
         socket_4.sendall(packet_str.encode())
         write_to_file("./output/sent_by_router_1.txt", packet_str, "4")
     elif sending_port == '127.0.0.1' and interface == '127.0.0.1':

@@ -226,7 +226,7 @@ def start_server():
 def processing_thread(connection, ip, port, forwarding_table_with_range, default_gateway_port, max_buffer_size=5120):
     # 1. Connect to the appropriate sending ports (based on the network topology diagram).
 
-    # socket_3 = create_socket('127.0.0.1',8003)
+    socket_3 = create_socket('127.0.0.1',8003)
     socket_4 = create_socket('127.0.0.1',8004)
 
     # 2. Continuously process incoming packets
@@ -282,7 +282,7 @@ def processing_thread(connection, ip, port, forwarding_table_with_range, default
             print("sending packet", new_packet, "to Router 3")
             # packet_str = ",".join(map(str, new_packet)) + "\n"
             packet_str = ",".join(map(str, new_packet))
-            # socket_3.sendall(packet_str.encode())
+            socket_3.sendall(packet_str.encode())
             write_to_file("./output/sent_by_router_2.txt", packet_str, "3")
         
         elif sending_port == '8004':
