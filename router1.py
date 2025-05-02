@@ -164,8 +164,6 @@ for f in files:
     os.remove(f)
 
 # 1. Connect to the appropriate sending ports (based on the network topology diagram).
-## ...
-## ...
 
 socket_2 = create_socket('127.0.0.1',8002)
 socket_4 = create_socket('127.0.0.1',8004)
@@ -175,11 +173,9 @@ forwarding_table = read_csv('./input/router_1_table.csv')
 # 3. Store the default gateway port.
 default_gateway_port = find_default_gateway(forwarding_table)
 # 4. Generate a new forwarding table that includes the IP ranges for matching against destination IPS.
-## forwarding_table_with_range = ...
 forwarding_table_with_range = generate_forwarding_table_with_range(forwarding_table)
 
 # 5. Read in and store the packets.
-## packets_table = ...
 packets_table = read_csv('./input/packets.csv')
 
 # 6. For each packet,
@@ -189,14 +185,8 @@ for packet in packets_table:
     destinationIP = packet[1]
     payload = packet[2]
     ttl = packet[3]
-    ## sourceIP = ...
-    ## destinationIP = ...
-    ## payload = ...
-    ## ttl = ...
 
     # 8. Decrement the TTL by 1 and construct a new packet with the new TTL.
-    ## new_ttl = ...
-    ## new_packet = ...
 
     new_ttl = int(ttl) - 1
     new_packet = [sourceIP, destinationIP, payload, str(new_ttl)]
@@ -214,12 +204,11 @@ for packet in packets_table:
     ## destinationIP_int = ...
         
     # 9. Find the appropriate sending port to forward this new packet to.
-    ## ...
     sending_port = 0
-    interface = None
+    gateway = None
     for element in forwarding_table_with_range:
         if int(element[0], 2) <= destinationIP_int <= int(element[1], 2):
-            interface = element[2]
+            gateway = element[2]
             sending_port = element[3]
     
     # 10. If no port is found, then set the sending port to the default port.
@@ -242,14 +231,12 @@ for packet in packets_table:
         packet_str = ",".join(map(str, new_packet))
         socket_4.sendall(packet_str.encode())
         write_to_file("./output/sent_by_router_1.txt", packet_str, "4")
-    elif sending_port == '127.0.0.1' and interface == '127.0.0.1':
+    elif sending_port == '127.0.0.1' and gateway == '127.0.0.1':
         print("OUT:", payload)
         write_to_file("./output/out_router_1.txt", payload)
     else:
         print("DISCARD:", new_packet)
         packet_str = ",".join(map(str, new_packet))
         write_to_file("./output/discarded_by_router_1.txt", packet_str)
-        # write to out_router_1.txt
 
-    # Sleep for some time before sending the next packet (for debugging purposes)
     time.sleep(1)
